@@ -1,0 +1,49 @@
+#!/bin/bash
+
+
+AP_INSTANCE=default
+CRS_INSTANCE=4.0-dev
+PLUGIN_INSTANCE=default
+
+
+while getopts a:c:p: flag
+do
+    case "${flag}" in
+        a) AP_INSTANCE=${OPTARG};;
+        c) CRS_INSTANCE=${OPTARG};;
+        p) PLUGIN_INSTANCE=${OPTARG};;
+    esac
+done
+
+echo "Apache Instance: ${AP_INSTANCE}";
+echo "CRS Instance: ${CRS_INSTANCE}";
+#echo "Plugin Instance: ${PLUGIN_INSTANCE}";
+
+
+ftwConf="logfile: '/crs-develop/crs/${CRS_INSTANCE}/coreruleset/tests/logs/modsec2-apache/error.log'"
+ftwConfFile='/tmp/ftw-conf.yaml';
+echo ${ftwConf}>${ftwConfFile}
+
+case "${@:$OPTIND:1}" in
+run)
+echo /root/go/bin/go-ftw run --config ${ftwConfFile} -d /crs-develop/crs/${CRS_INSTANCE}/coreruleset/tests -t
+/root/go/bin/go-ftw run --config ${ftwConfFile} -d /crs-develop/crs/${CRS_INSTANCE}/coreruleset/tests -t
+;;
+run-test)
+echo /root/go/bin/go-ftw run --config ${ftwConfFile} -d /crs-develop/crs/${CRS_INSTANCE}/coreruleset/tests -t -i ${@:OPTIND+1:1}
+/root/go/bin/go-ftw run --config ${ftwConfFile} -d /crs-develop/crs/${CRS_INSTANCE}/coreruleset/tests -t -i ${@:OPTIND+1:1}
+
+
+;;
+clean)
+   rm -f /crs-develop/crs/${CRS_INSTANCE}/coreruleset/tests/logs/modsec2-apache/*.log
+;;
+*)
+   echo "$1 -a <apache-instance> -c <crs-instance> start|stop"
+;;
+esac
+
+#echo "Consider cleaning up logs:"
+#echo 'rm usr/local/apache2/logs/*'
+
+

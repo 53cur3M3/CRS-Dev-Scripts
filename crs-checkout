@@ -1,0 +1,62 @@
+#!/bin/bash
+
+CRSLOC="/crs-develop/crs/";
+CRSREPO="ssh://git@github.com/53cur3M3/coreruleset/"
+CRSSRCBRANCH="origin/v4.0/dev"
+
+
+
+while getopts l:r:b: flag
+do
+    case "${flag}" in
+        l) CRSLOC=${OPTARG};;
+        r) CRSREPO=${OPTARG};;
+        b) CRSSRCBRANCH=${OPTARG};;
+    esac
+done
+
+echo "CRS Location: ${CRSLOC}";
+echo "CRS Repository: ${CRSREPO}";
+echo "CRS Branch: ${CRSSRCBRANCH}";
+
+
+CRSDIR="${@:$OPTIND:1}";
+
+
+# Check a new directory name has been received as a parameter
+if [ -z "${CRSDIR}" ]; then
+  echo "Syntax: $0 new-crs-directory-name"
+  exit 1;
+fi
+
+# Check nothing by new directory name already exists
+if [ -e "${CRSLOC}${CRSDIR}" ]; then
+  echo "CRS Directory must not already exist";
+  exit 2;
+fi
+
+mkdir -p ${CRSLOC}${CRSDIR};
+
+# Check we managed to create directory
+if [ ! -d "${CRSLOC}${CRSDIR}" ]; then
+  echo "Failed to create directory ${CRSLOC}${CRSDIR}"
+  exit 1;
+fi
+
+# Change to target directory
+cd ${CRSLOC}${CRSDIR};
+
+# Clone Repository
+git clone ${CRSREPO}
+cd coreruleset
+
+# checkout standard branch
+git checkout ${CRSSRCBRANCH}
+
+# Create a new branch
+git switch -c ${CRSDIR}
+
+# Initialise regexp-assemble
+git submodule update --init util/regexp-assemble/lib/lib/
+
+

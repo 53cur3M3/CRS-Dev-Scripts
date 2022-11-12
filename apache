@@ -1,0 +1,91 @@
+#!/bin/bash
+
+
+AP_INSTANCE=default
+CRS_INSTANCE=4.0-dev
+PLUGIN_INSTANCE=default
+
+AP_BASE="/crs-develop/apache"
+CRS_BASE="/crs-develop/crs"
+PLUGIN_BASE="/crs-develop/plugins"
+
+while getopts a:c:p: flag
+do
+    case "${flag}" in
+        a) AP_INSTANCE=${OPTARG};;
+        c) CRS_INSTANCE=${OPTARG};;
+        p) PLUGIN_INSTANCE=${OPTARG};;
+    esac
+done
+
+echo "Apache Instance: ${AP_INSTANCE}";
+echo "CRS Instance: ${CRS_INSTANCE}";
+echo "Plugin Instance: ${PLUGIN_INSTANCE}";
+
+
+
+case "${@:$OPTIND:1}" in
+start)
+docker run --rm \
+  --name apache \
+  -p 80:80 \
+  -d \
+  --mount type=bind,src=${AP_BASE}/${AP_INSTANCE}/conf,dst=/usr/local/apache2/conf \
+  --mount type=bind,src=${AP_BASE}/${AP_INSTANCE}/htdocs,dst=/usr/local/apache2/htdocs \
+  --mount type=bind,src=${AP_BASE}/${AP_INSTANCE}/cgi-bin,dst=/usr/local/apache2/cgi-bin \
+  --mount type=bind,src=${AP_BASE}/${AP_INSTANCE}/logs,dst=/usr/local/apache2/logs \
+  --mount type=bind,src=${CRS_BASE}/${CRS_INSTANCE}/coreruleset,dst=/usr/local/apache2/coreruleset \
+  --mount type=bind,src=${PLUGIN_BASE}/${PLUGIN_INSTANCE}/plugins,dst=/usr/local/apache2/coreruleset/plugins \
+  owasp/modsecurity:apache
+;;
+cmd)
+echo docker run --rm \
+  --name apache \
+  -p 80:80 \
+  -d \
+  --mount type=bind,src=${AP_BASE}/${AP_INSTANCE}/conf,dst=/usr/local/apache2/conf \
+  --mount type=bind,src=${AP_BASE}/${AP_INSTANCE}/htdocs,dst=/usr/local/apache2/htdocs \
+  --mount type=bind,src=${AP_BASE}/${AP_INSTANCE}/cgi-bin,dst=/usr/local/apache2/cgi-bin \
+  --mount type=bind,src=${AP_BASE}/${AP_INSTANCE}/logs,dst=/usr/local/apache2/logs \
+  --mount type=bind,src=${CRS_BASE}/${CRS_INSTANCE}/coreruleset,dst=/usr/local/apache2/coreruleset \
+  --mount type=bind,src=${PLUGIN_BASE}/${PLUGIN_INSTANCE}/plugins,dst=/usr/local/apache2/coreruleset/plugins \
+  owasp/modsecurity:apache
+;;
+terminal)
+docker run --rm -it \
+  --name apache \
+  -p 80:80 \
+  --mount type=bind,src=${AP_BASE}/${AP_INSTANCE}/conf,dst=/usr/local/apache2/conf \
+  --mount type=bind,src=${AP_BASE}/${AP_INSTANCE}/htdocs,dst=/usr/local/apache2/htdocs \
+  --mount type=bind,src=${AP_BASE}/${AP_INSTANCE}/cgi-bin,dst=/usr/local/apache2/cgi-bin \
+  --mount type=bind,src=${AP_BASE}/${AP_INSTANCE}/logs,dst=/usr/local/apache2/logs \
+  --mount type=bind,src=${CRS_BASE}/${CRS_INSTANCE}/coreruleset,dst=/usr/local/apache2/coreruleset \
+  --mount type=bind,src=${PLUGIN_BASE}/${PLUGIN_INSTANCE}/plugins,dst=/usr/local/apache2/coreruleset/plugins \
+  owasp/modsecurity:apache /bin/sh
+;;
+debug)
+docker exec -it apache /bin/bash
+;;
+stop)
+   echo "Stopping apache"
+   docker stop apache
+;;
+status)
+   docker ps
+;;
+taillog)
+   tail -f ${AP_BASE}/${AP_INSTANCE}/logs/access.log
+;;
+tailerrlog)
+   tail -f ${AP_BASE}/${AP_INSTANCE}/logs/error.log
+;;
+clean)
+   rm -f ${AP_BASE}/${AP_INSTANCE}/logs/*.log
+;;
+*)
+   echo "$1 -a <apache-instance> -c <crs-instance> start|stop"
+;;
+esac
+
+
+

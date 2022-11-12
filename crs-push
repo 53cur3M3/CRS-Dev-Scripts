@@ -1,0 +1,33 @@
+#!/bin/bash
+
+CRSLOC="/crs-develop/crs/";
+
+while getopts l:r:b: flag
+do
+    case "${flag}" in
+        l) CRSLOC=${OPTARG};;
+    esac
+done
+
+echo "CRS Location: ${CRSLOC}";
+
+
+CRSDIR="${@:$OPTIND:1}";
+
+# Check a new directory name has been received as a parameter
+if [ -z "${CRSDIR}" ]; then
+  echo "Syntax: $0 new-crs-directory-name"
+  exit 1;
+fi
+
+# Check CRS directory exists
+if [ ! -d "${CRSLOC}${CRSDIR}/coreruleset" ]; then
+  echo "Directory does not exist ${CRSLOC}${CRSDIR}/coreruleset"
+  exit 1;
+fi
+
+# Change to target directory
+cd ${CRSLOC}${CRSDIR}/coreruleset;
+
+git push -u origin ${CRSDIR}
+

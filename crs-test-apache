@@ -1,0 +1,54 @@
+#!/bin/bash
+
+CRS_INSTANCE=4.0-dev
+
+CRSLOC="/crs-develop/crs/";
+DOCKYML="/coreruleset/tests/docker-compose.yml"
+APEXT="/coreruleset/tests/logs/modsec2-apache/"
+
+while getopts a:c:p: flag
+do
+    case "${flag}" in
+        c) CRS_INSTANCE=${OPTARG};;
+    esac
+done
+
+echo "CRS Instance: ${CRS_INSTANCE}";
+
+
+case "${@:$OPTIND:1}" in
+start)
+  /usr/libexec/docker/cli-plugins/docker-compose -f ${CRSLOC}${CRS_INSTANCE}${DOCKYML} up -d modsec2-apache
+;;
+stop)
+   echo "Stopping apache"
+   /usr/libexec/docker/cli-plugins/docker-compose -f ${CRSLOC}${CRS_INSTANCE}${DOCKYML} down
+;;
+restart)
+   /usr/libexec/docker/cli-plugins/docker-compose -f ${CRSLOC}${CRS_INSTANCE}${DOCKYML} down
+   sleep 2
+  /usr/libexec/docker/cli-plugins/docker-compose -f ${CRSLOC}${CRS_INSTANCE}${DOCKYML} up -d modsec2-apache
+
+;;
+status)
+   docker ps
+;;
+taillog)
+   tail -f ${CRSLOC}${CRS_INSTANCE}${APEXT}/access.log
+;;
+tailerrlog)
+   tail -f ${CRSLOC}${CRS_INSTANCE}${APEXT}/error.log
+;;
+tailmodlog)
+   tail -f ${CRSLOC}${CRS_INSTANCE}${APEXT}/modsec_audit.log
+;;
+clean)
+   rm -f ${CRSLOC}${CRS_INSTANCE}${APEXT}/*
+;;
+*)
+   echo "$1 -a <apache-instance> -c <crs-instance> start|stop"
+;;
+esac
+
+
+

@@ -1,0 +1,59 @@
+#!/bin/bash
+
+PLUGLOC="/crs-develop/plugins/";
+PLUGREPO="ssh://git@github.com/53cur3M3/template-plugin/"
+PLUGSRCBRANCH="origin/main"
+
+
+
+while getopts l:r:b: flag
+do
+    case "${flag}" in
+        l) PLUGLOC=${OPTARG};;
+        r) PLUGREPO=${OPTARG};;
+        b) PLUGSRCBRANCH=${OPTARG};;
+    esac
+done
+
+echo "Plugin Location: ${PLUGLOC}";
+echo "Plugin Repository: ${PLUGREPO}";
+echo "Plugin Branch: ${PLUGSRCBRANCH}";
+
+
+PLUGDIR="${@:$OPTIND:1}";
+
+
+# Check a new directory name has been received as a parameter
+if [ -z "${PLUGDIR}" ]; then
+  echo "Syntax: $0 new-plugin-directory-name"
+  exit 1;
+fi
+
+# Check nothing by new directory name already exists
+if [ -e "${PLUGLOC}${PLUGDIR}" ]; then
+  echo "Plugin Directory must not already exist";
+  exit 2;
+fi
+# Check default-template doesn't already exist
+if [ -e "${PLUGLOC}template-plugin" ]; then
+  echo "Plugin Directory must not already exist";
+  exit 2;
+fi
+
+# Change to target directory
+cd ${PLUGLOC};
+
+# Clone Repository
+git clone ${PLUGREPO}
+
+mv template-plugin ${PLUGDIR}
+cd ${PLUGDIR}
+
+# checkout standard branch
+git checkout ${PLUGSRCBRANCH}
+
+# Create a new branch
+git switch -c ${PLUGDIR}
+
+
+
