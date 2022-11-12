@@ -3,7 +3,7 @@
 
 AP_INSTANCE=default
 CRS_INSTANCE=4.0-dev
-PLUGIN_INSTANCE=default
+PLUGIN_INSTANCE=default-plugin
 
 AP_BASE="/crs-develop/apache"
 CRS_BASE="/crs-develop/crs"
